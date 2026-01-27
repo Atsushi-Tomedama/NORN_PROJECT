@@ -11,6 +11,7 @@ Developed as part of a Medical Thesis at the **University of Bologna**, this pro
 * **Stage-Agnostic:** Intentionally excludes clinical staging to isolate biological signals.
 * **Stratified Validation:** Uses a rigorous 70/15/15 split strategy.
 * **Explainable Metrics:** Includes C-Index, Brier Score, and Kaplan-Meier risk stratification.
+  
 
 ## Installation
 
@@ -22,15 +23,17 @@ Developed as part of a Medical Thesis at the **University of Bologna**, this pro
 
 ## Clone the repository and install the required dependencies:
 
-Bash
+```Bash
 git clone [https://github.com/YOUR_USERNAME/NORN-Thesis.git](https://github.com/YOUR_USERNAME/NORN-Thesis.git)
 cd NORN-Thesis
 pip install -r requirements.txt
+.
+
 2. Usage
 
 ## Run the main script to train the model and generate survival curves:
 
-Bash
+```Bash
 python src/norn_model.py
 Note: The repository includes a synthetic data generator for demonstration purposes. To reproduce thesis results, use the secured MSK-CHORD dataset (access restricted).
 
