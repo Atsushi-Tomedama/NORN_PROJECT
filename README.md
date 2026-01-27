@@ -24,7 +24,7 @@ Installation
 ## Clone the repository and install the required dependencies:
 
   Bash
-git clone [https://github.com/YOUR_USERNAME/NORN-Thesis.git](https://github.com/YOUR_USERNAME/NORN-Thesis.git)
+git clone [https://github.com/YOUR_USERNAME/NORN-Thesis.git](https://github.com/Atsushi-Tomedama/NORN_PROJECT/tree/main))
 cd NORN-Thesis
 pip install -r requirements.txt
 Clone
