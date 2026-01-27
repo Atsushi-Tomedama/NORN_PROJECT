@@ -19,21 +19,22 @@ Developed as part of a Medical Thesis at the **University of Bologna**, this pro
    ```bash
    git clone [https://github.com/YOUR_USERNAME/NORN-Thesis.git](https://github.com/YOUR_USERNAME/NORN-Thesis.git)
    cd NORN-Thesis5Y
-. Installation
+Installation
 
 ## Clone the repository and install the required dependencies:
 
-```Bash
+  Bash
 git clone [https://github.com/YOUR_USERNAME/NORN-Thesis.git](https://github.com/YOUR_USERNAME/NORN-Thesis.git)
 cd NORN-Thesis
 pip install -r requirements.txt
-.
+Clone
+
 
 2. Usage
 
 ## Run the main script to train the model and generate survival curves:
 
-```Bash
+  Bash
 python src/norn_model.py
 Note: The repository includes a synthetic data generator for demonstration purposes. To reproduce thesis results, use the secured MSK-CHORD dataset (access restricted).
 
