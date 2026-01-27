@@ -37,8 +37,8 @@ Pour lier ce projet à un nouveau dépôt GitHub nommé **NORN-Thesis**, consult
 
 ```bash
 # 1. Créer le dépôt sur GitHub: https://github.com/new
-# 2. Lier au dépôt distant
-git remote add origin https://github.com/VOTRE_USERNAME/NORN-Thesis.git
+# 2. Lier au dépôt distant (remplacez <VOTRE_USERNAME> par votre nom d'utilisateur)
+git remote add origin https://github.com/<VOTRE_USERNAME>/NORN-Thesis.git
 
 # 3. Pousser le code
 git branch -M main

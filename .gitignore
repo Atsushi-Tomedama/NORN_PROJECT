@@ -267,6 +267,5 @@ medical_data/
 .Python_history
 *.swp
 *.swo
-*~
 .DS_Store
 Thumbs.db

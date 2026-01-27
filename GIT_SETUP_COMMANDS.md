@@ -10,10 +10,11 @@
 # NE PAS initialiser avec README, .gitignore ou LICENSE (votre projet local existe déjà)
 
 # 2. Lier votre dépôt local au dépôt distant
-git remote add origin https://github.com/VOTRE_USERNAME/NORN-Thesis.git
+# Remplacez <VOTRE_USERNAME> par votre nom d'utilisateur GitHub
+git remote add origin https://github.com/<VOTRE_USERNAME>/NORN-Thesis.git
 
 # OU si vous utilisez SSH:
-git remote add origin git@github.com:VOTRE_USERNAME/NORN-Thesis.git
+git remote add origin git@github.com:<VOTRE_USERNAME>/NORN-Thesis.git
 
 # 3. Vérifier que le remote est bien ajouté
 git remote -v
@@ -27,7 +28,8 @@ git push -u origin main
 
 ```bash
 # Lier le dépôt local au dépôt distant existant
-git remote add norn-thesis https://github.com/VOTRE_USERNAME/NORN-Thesis.git
+# Remplacez <VOTRE_USERNAME> par votre nom d'utilisateur GitHub
+git remote add norn-thesis https://github.com/<VOTRE_USERNAME>/NORN-Thesis.git
 
 # Vérifier la configuration
 git remote -v
