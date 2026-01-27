@@ -205,3 +205,68 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ============================================================================
+# MEDICAL DATA PROTECTION - NORN THESIS PROJECT
+# ============================================================================
+# CRITICAL: Empêche absolument l'upload de données patients (RGPD/HIPAA)
+# Never commit patient data files to version control
+
+# CSV files - Patient data files
+*.csv
+*.CSV
+
+# Excel files - Potential patient data
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+*.xltx
+*.xltm
+
+# Data directories - Common folder names for patient data
+data/
+Data/
+DATA/
+patient*/
+patients/
+donnees/
+donnees_patients/
+raw_data/
+clinical_data/
+medical_data/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.mdb
+*.accdb
+
+# Pickle files - May contain sensitive serialized data
+*.pkl
+*.pickle
+
+# JSON/XML data files (often contain patient data)
+*_data.json
+*_patients.json
+*_clinical.json
+*_data.xml
+*_patients.xml
+
+# Backup files
+*.bak
+*.backup
+*.old
+*~
+
+# Temporary Python files - Additional coverage
+*.tmp
+*.temp
+.Python_history
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
