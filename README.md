@@ -34,10 +34,10 @@ python src/norn_model.py
 ```
 Note: The repository includes a synthetic data generator for demonstration purposes. To reproduce thesis results, use the secured MSK-CHORD dataset (access restricted).
 
-👨‍⚕️ The "Doctor-in-the-Loop"
+## The "Doctor-in-the-Loop"
 This project advocates for the "Doctor-in-the-Loop" paradigm. NORN is not a replacement for the clinician but a decision-support tool.
 
-Input: Genomic Data (TMB) + Histology.
+Input: Genomic Data (TMB) + Histology + Gender + Sample type. (HARD DATA)
 
 Output: Risk Score & Survival Probability.
 
