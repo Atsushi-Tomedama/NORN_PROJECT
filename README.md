@@ -44,7 +44,7 @@ Output: Risk Score & Survival Probability.
 ## Action: The physician integrates this biological risk score with clinical findings to personalize follow-up intensity and treatment strategies.
 
 ## Medical Disclaimer
-This software is for research and educational purposes only. It is not a certified medical device (SaMD) and has not received FDA/CE clearance. It should not be used for clinical decision-making witho[...] 
+This software is for research and educational purposes only. It is not a certified medical device (SaMD) and has not received FDA/CE clearance. It should not be used for clinical decision-making without further prospective validation.
 
 ## Citation
 If you find this work useful, please cite:
