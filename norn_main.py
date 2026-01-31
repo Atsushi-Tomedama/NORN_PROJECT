@@ -1,1 +1,136 @@
-# ==============================================================================\n# PROGETTO NORN: NEURAL ONCOLOGY RISK NETWORK\n# Autore: Dany Marcel Toukam Megaptche\n# Tesi di Laurea in Medicina e Chirurgia - Università di Bologna\n# ==============================================================================\n\nimport numpy as np\nimport pandas as pd\nimport torch\nimport torch.nn as nn\nimport os\nimport sys\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.compose import ColumnTransformer\n\n# Imports bibliothèques spécifiques\ntry:\n    import torchtuples as tt\n    from pycox.models import CoxPH\n    from pycox.evaluation import EvalSurv\nexcept ImportError:\n    print("❌ Errore: Librerie mancanti. Esegui: pip install -r requirements.txt")\n    sys.exit(1)\n\n# Configurazione Hardware\ndevice = torch.device("cuda" if torch.cuda.is_available() else "cpu")\nprint(f"🚀 NORN SYSTEM STARTUP | DEVICE: {device}")\n\n# ------------------------------------------------------------------------------\n# 1. GENERATORE DATI SINTETICI (Per Demo Pubblica)\n# ------------------------------------------------------------------------------\ndef generate_synthetic_data(n_samples=1000):\n    """Genera dati finti se il dataset reale MSK-CHORD non è presente."""\n    print("\n⚠️  ATTENZIONE: Dataset MSK-CHORD non trovato.")\n    print("⚙️  Avvio generazione dati SINTETICI per dimostrazione...")\n    \n    np.random.seed(42)\n    data = {\n        'TMB_NONSYNONYMOUS': np.random.lognormal(mean=2, sigma=1, size=n_samples),\n        'SAMPLE_TYPE': np.random.choice(['Primary', 'Metastasis'], n_samples),\n        'GENDER': np.random.choice(['Male', 'Female'], n_samples),\n        'CANCER_TYPE': np.random.choice(['Lung', 'Melanoma', 'Breast', 'Colorectal', 'Other'], n_samples),\n        'OS_MONTHS': np.random.exponential(scale=24, size=n_samples), # Sopravvivenza simulata\n        'Event': np.random.choice([0, 1], n_samples, p=[0.3, 0.7]) # 0=Vivo, 1=Deceduto\n    }\n    \n    df = pd.DataFrame(data)\n    # Creiamo OS_STATUS solo per compatibilità col formato originale\n    df['OS_STATUS'] = df['Event'].apply(lambda x: '1:DECEASED' if x==1 else '0:LIVING')\n    \n    print(f"✅ Dati sintetici generati: {n_samples} pazienti simulati.\n")\n    return df\n\n# ------------------------------------------------------------------------------\n# 2. DATA LOADING\n# ------------------------------------------------------------------------------\ndef load_data(patient_file, sample_file):\n    # Se i file non esistono, usa il generatore sintetico\n    if not os.path.exists(patient_file) or not os.path.exists(sample_file):\n        return generate_synthetic_data()\n\n    print("📥 Caricamento Dataset Reale MSK-CHORD...")\n    df_pat = pd.read_csv(patient_file, sep='\t', comment='#', low_memory=False)\n    df_sam = pd.read_csv(sample_file, sep='\t', comment='#', low_memory=False)\n    df = pd.merge(df_pat, df_sam, on='PATIENT_ID')\n    \n    # Preprocessing\n    features = ['TMB_NONSYNONYMOUS', 'SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE']\n    df_clean = df.dropna(subset=features + ['OS_MONTHS', 'OS_STATUS']).copy()\n    \n    # Target Transformation\n    df_clean['Event'] = df_clean['OS_STATUS'].str.contains("DECEASED|1").astype(int)\n    \n    # Group rare cancers\n    top_cancers = df_clean['CANCER_TYPE'].value_counts().nlargest(15).index\n    df_clean.loc[~df_clean['CANCER_TYPE'].isin(top_cancers), 'CANCER_TYPE'] = 'Other'\n    \n    return df_clean\n\n# ------------------------------------------------------------------------------\n# 3. NORN MODEL ARCHITECTURE\n# ------------------------------------------------------------------------------\nclass NORN_Net(nn.Module):\n    def __init__(self, in_features):\n        super(NORN_Net, self).__init__()\n        self.net = nn.Sequential(\n            nn.Linear(in_features, 64), nn.SELU(), nn.BatchNorm1d(64), nn.Dropout(0.3),\n            nn.Linear(64, 32), nn.SELU(), nn.BatchNorm1d(32), nn.Dropout(0.3),\n            nn.Linear(32, 16), nn.SELU(),\n            nn.Linear(16, 1)\n        )\n\n    def forward(self, input):\n        return self.net(input)\n\n# ------------------------------------------------------------------------------\n# MAIN EXECUTION\n# ------------------------------------------------------------------------------\nif __name__ == "__main__":\n    # Nomi file attesi\n    PATIENT_FILE = 'data_clinical_patient.txt'\n    SAMPLE_FILE = 'data_clinical_sample.txt'\n\n    # Caricamento (o generazione)\n    df = load_data(PATIENT_FILE, SAMPLE_FILE)\n    \n    # Feature Engineering\n    print("🛠  Preprocessing e Feature Engineering...")\n    ct = ColumnTransformer([\n        ('num', StandardScaler(), ['TMB_NONSYNONYMOUS']),\n        ('cat', OneHotEncoder(sparse_output=False, handle_unknown='ignore'), ['SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE'])\n    ])\n    \n    X_cols = ['TMB_NONSYNONYMOUS', 'SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE']\n    \n    # Assicuriamo che le colonne esistano (in caso di dati sintetici)\n    df = df[df['OS_MONTHS'] > 0] # Rimuove tempi negativi o zero\n    \n    get_target = lambda df: (df['OS_MONTHS'].values.astype('float32'), df['Event'].values.astype('float32'))\n    \n    df_train, df_test = train_test_split(df, test_size=0.3, random_state=42)\n    X_train = ct.fit_transform(df_train[X_cols]).astype('float32')\n    y_train = get_target(df_train)\n    \n    # Model Init\n    input_nodes = X_train.shape[1]\n    net = NORN_Net(input_nodes).to(device)\n    model = CoxPH(net, tt.optim.Adam(lr=0.001))\n    \n    # Training\n    print(f"🧠 Avvio Training NORN su {len(df_train)} pazienti...")\n    model.fit(X_train, y_train, batch_size=256, epochs=50, verbose=True)\n    \n    print("\n✅ SUCCESS: Modello addestrato e pronto.")\n    print("   (Nota: Se hai usato dati sintetici, le curve di sopravvivenza sono simulate)")
+# ==============================================================================
+# PROGETTO NORN: NEURAL ONCOLOGY RISK NETWORK
+# Autore: Dany Marcel Toukam Megaptche
+# Tesi di Laurea in Medicina e Chirurgia - Università di Bologna
+# ==============================================================================
+
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+import os
+import sys
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+
+# Imports bibliothèques spécifiques
+try:
+    import torchtuples as tt
+    from pycox.models import CoxPH
+    from pycox.evaluation import EvalSurv
+except ImportError:
+    print("❌ Errore: Librerie mancanti. Esegui: pip install -r requirements.txt")
+    sys.exit(1)
+
+# Configurazione Hardware
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"🚀 NORN SYSTEM STARTUP | DEVICE: {device}")
+
+# ------------------------------------------------------------------------------
+# 1. GENERATORE DATI SINTETICI (Per Demo Pubblica)
+# ------------------------------------------------------------------------------
+def generate_synthetic_data(n_samples=1000):
+    """Genera dati finti se il dataset reale MSK-CHORD non è presente."""
+    print("\n⚠️  ATTENZIONE: Dataset MSK-CHORD non trovato.")
+    print("⚙️  Avvio generazione dati SINTETICI per dimostrazione...")
+    
+    np.random.seed(42)
+    data = {
+        'TMB_NONSYNONYMOUS': np.random.lognormal(mean=2, sigma=1, size=n_samples),
+        'SAMPLE_TYPE': np.random.choice(['Primary', 'Metastasis'], n_samples),
+        'GENDER': np.random.choice(['Male', 'Female'], n_samples),
+        'CANCER_TYPE': np.random.choice(['Lung', 'Melanoma', 'Breast', 'Colorectal', 'Other'], n_samples),
+        'OS_MONTHS': np.random.exponential(scale=24, size=n_samples), # Sopravvivenza simulata
+        'Event': np.random.choice([0, 1], n_samples, p=[0.3, 0.7]) # 0=Vivo, 1=Deceduto
+    }
+    
+    df = pd.DataFrame(data)
+    # Creiamo OS_STATUS solo per compatibilità col formato originale
+    df['OS_STATUS'] = df['Event'].apply(lambda x: '1:DECEASED' if x==1 else '0:LIVING')
+    
+    print(f"✅ Dati sintetici generati: {n_samples} pazienti simulati.\n")
+    return df
+
+# ------------------------------------------------------------------------------
+# 2. DATA LOADING
+# ------------------------------------------------------------------------------
+def load_data(patient_file, sample_file):
+    # Se i file non esistono, usa il generatore sintetico
+    if not os.path.exists(patient_file) or not os.path.exists(sample_file):
+        return generate_synthetic_data()
+
+    print("📥 Caricamento Dataset Reale MSK-CHORD...")
+    df_pat = pd.read_csv(patient_file, sep='\t', comment='#', low_memory=False)
+    df_sam = pd.read_csv(sample_file, sep='\t', comment='#', low_memory=False)
+    df = pd.merge(df_pat, df_sam, on='PATIENT_ID')
+    
+    # Preprocessing
+    features = ['TMB_NONSYNONYMOUS', 'SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE']
+    df_clean = df.dropna(subset=features + ['OS_MONTHS', 'OS_STATUS']).copy()
+    
+    # Target Transformation
+    df_clean['Event'] = df_clean['OS_STATUS'].str.contains("DECEASED|1").astype(int)
+    
+    # Group rare cancers
+    top_cancers = df_clean['CANCER_TYPE'].value_counts().nlargest(15).index
+    df_clean.loc[~df_clean['CANCER_TYPE'].isin(top_cancers), 'CANCER_TYPE'] = 'Other'
+    
+    return df_clean
+
+# ------------------------------------------------------------------------------
+# 3. NORN MODEL ARCHITECTURE
+# ------------------------------------------------------------------------------
+class NORN_Net(nn.Module):
+    def __init__(self, in_features):
+        super(NORN_Net, self).__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_features, 64), nn.SELU(), nn.BatchNorm1d(64), nn.Dropout(0.3),
+            nn.Linear(64, 32), nn.SELU(), nn.BatchNorm1d(32), nn.Dropout(0.3),
+            nn.Linear(32, 16), nn.SELU(),
+            nn.Linear(16, 1)
+        )
+
+    def forward(self, input):
+        return self.net(input)
+
+# ------------------------------------------------------------------------------
+# MAIN EXECUTION
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    # Nomi file attesi
+    PATIENT_FILE = 'data_clinical_patient.txt'
+    SAMPLE_FILE = 'data_clinical_sample.txt'
+
+    # Caricamento (o generazione)
+    df = load_data(PATIENT_FILE, SAMPLE_FILE)
+    
+    # Feature Engineering
+    print("🛠  Preprocessing e Feature Engineering...")
+    ct = ColumnTransformer([
+        ('num', StandardScaler(), ['TMB_NONSYNONYMOUS']),
+        ('cat', OneHotEncoder(sparse_output=False, handle_unknown='ignore'), ['SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE'])
+    ])
+    
+    X_cols = ['TMB_NONSYNONYMOUS', 'SAMPLE_TYPE', 'GENDER', 'CANCER_TYPE']
+    
+    # Assicuriamo che le colonne esistano (in caso di dati sintetici)
+    df = df[df['OS_MONTHS'] > 0] # Rimuove tempi negativi o zero
+    
+    get_target = lambda df: (df['OS_MONTHS'].values.astype('float32'), df['Event'].values.astype('float32'))
+    
+    df_train, df_test = train_test_split(df, test_size=0.3, random_state=42)
+    X_train = ct.fit_transform(df_train[X_cols]).astype('float32')
+    y_train = get_target(df_train)
+    
+    # Model Init
+    input_nodes = X_train.shape[1]
+    net = NORN_Net(input_nodes).to(device)
+    model = CoxPH(net, tt.optim.Adam(lr=0.001))
+    
+    # Training
+    print(f"🧠 Avvio Training NORN su {len(df_train)} pazienti...")
+    model.fit(X_train, y_train, batch_size=256, epochs=50, verbose=True)
+    
+    print("\n✅ SUCCESS: Modello addestrato e pronto.")
+    print("   (Nota: Se hai usato dati sintetici, le curve di sopravvivenza sono simulate)")
