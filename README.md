@@ -17,8 +17,8 @@ Developed as part of a Medical Thesis at the **University of Bologna**, this pro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/NORN-Thesis.git
-   cd NORN-Thesis
+   git clone [https://github.com/Atsushi-Tomedama/NORN_PROJECT.git]
+   cd NORN-PROJECT
    ```
 
 2. Install the required dependencies:
