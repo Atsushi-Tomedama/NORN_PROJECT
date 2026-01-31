@@ -11,14 +11,15 @@ Developed as part of a Medical Thesis at the **University of Bologna**, this pro
 * **Stage-Agnostic:** Intentionally excludes clinical staging to isolate biological signals.
 * **Stratified Validation:** Uses a rigorous 70/15/15 split strategy.
 * **Explainable Metrics:** Includes C-Index, Brier Score, and Kaplan-Meier risk stratification.
+
   
 
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/Atsushi-Tomedama/NORN_PROJECT.git]
-   cd NORN-PROJECT
+   git clone https://github.com/Atsushi-Tomedama/NORN_PROJECT.git
+   cd NORN_PROJECT
    ```
 
 2. Install the required dependencies:
@@ -44,7 +45,7 @@ Output: Risk Score & Survival Probability.
 ## Action: The physician integrates this biological risk score with clinical findings to personalize follow-up intensity and treatment strategies.
 
 ## Medical Disclaimer
-This software is for research and educational purposes only. It is not a certified medical device (SaMD) and has not received FDA/CE clearance. It should not be used for clinical decision-making without further prospective validation.
+This software is for research and educational purposes only. It is not a certified medical device (SaMD) and has not received FDA/CE clearance. It should not be used for clinical decision-making witho[...] 
 
 ## Citation
 If you find this work useful, please cite:
